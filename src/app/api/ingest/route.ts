@@ -40,18 +40,22 @@ export async function POST(request: NextRequest) {
     return Response.json({ ok: false, error: "invalid JSON body" }, { status: 400 });
   }
 
-  let day;
+  let result;
   try {
-    day = normalizeDay(body);
+    result = normalizeDay(body);
   } catch (error) {
     const message =
       error instanceof ValidationError ? error.message : "invalid payload";
     return Response.json({ ok: false, error: message }, { status: 400 });
   }
 
+  const { day, ignoredUnknownGames } = result;
   try {
     const summary = await ingestDay(getPool(), day);
-    return Response.json({ ok: true, date: day.date, ...summary }, { status: 200 });
+    return Response.json(
+      { ok: true, date: day.date, ignoredUnknownGames, ...summary },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("ingest failed", error);
     return Response.json({ ok: false, error: "internal error" }, { status: 500 });

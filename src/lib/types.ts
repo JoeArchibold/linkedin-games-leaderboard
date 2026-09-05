@@ -23,8 +23,14 @@ export interface GameEntry {
 /** Raw POST body for POST /api/ingest. */
 export interface IngestPayload {
   date?: unknown;
-  day_of_week?: unknown;
   games?: Record<string, GameEntry>;
+}
+
+/** Result of normalizing a payload: the day to ingest plus any games skipped. */
+export interface NormalizeResult {
+  day: NormalizedDay;
+  /** Game names present in the payload that are not in the known catalog. */
+  ignoredUnknownGames: string[];
 }
 
 export interface NormalizedPlayer {

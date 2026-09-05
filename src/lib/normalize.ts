@@ -4,15 +4,21 @@ import type {
   GameEntry,
   IngestPayload,
   LeaderboardEntry,
-  NormalizedDay,
   NormalizedGame,
   NormalizedPlayer,
+  NormalizeResult,
 } from "./types";
 
 export class ValidationError extends Error {}
 
-/** Validate/transform a raw POST body into a NormalizedDay for the ingester. */
-export function normalizeDay(payload: unknown): NormalizedDay {
+/**
+ * Validate/transform a raw POST body into a NormalizedDay for the ingester.
+ *
+ * Games not in the known catalog don't block the update: they are skipped and
+ * reported back so the caller can surface them in the response summary. The day
+ * is only rejected outright when there are no known games left to ingest.
+ */
+export function normalizeDay(payload: unknown): NormalizeResult {
   if (!payload || typeof payload !== "object") {
     throw new ValidationError("body must be an object");
   }
@@ -27,12 +33,29 @@ export function normalizeDay(payload: unknown): NormalizedDay {
   if (!games || typeof games !== "object" || Array.isArray(games)) {
     throw new ValidationError("games must be an object");
   }
+
   const entries = Object.entries(games);
   if (entries.length === 0) {
     throw new ValidationError("games must not be empty");
   }
 
-  return { date, games: entries.map(([name, entry]) => normalizeGame(name, entry)) };
+  const ignoredUnknownGames: string[] = [];
+  const knownEntries = entries.filter(([name]) => {
+    if (!isKnownGame(name)) {
+      ignoredUnknownGames.push(name);
+      return false;
+    }
+    return true;
+  });
+
+  if (knownEntries.length === 0) {
+    throw new ValidationError("games must include at least one known game");
+  }
+
+  return {
+    day: { date, games: knownEntries.map(([name, entry]) => normalizeGame(name, entry)) },
+    ignoredUnknownGames,
+  };
 }
 
 function normalizeGame(gameName: string, entry: GameEntry | undefined): NormalizedGame {
