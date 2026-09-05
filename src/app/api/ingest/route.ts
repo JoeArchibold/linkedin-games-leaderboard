@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 
+import { isValidIngestRequest } from "@/lib/auth";
 import { getPool } from "@/lib/db";
 import { ingestDay } from "@/lib/ingest";
 import { normalizeDay, ValidationError } from "@/lib/normalize";
@@ -33,6 +34,10 @@ export const runtime = "nodejs";
  * `leaderboard_fetches` before posting.
  */
 export async function POST(request: NextRequest) {
+  if (!isValidIngestRequest(request)) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
