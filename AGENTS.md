@@ -48,8 +48,10 @@ runtime image only needs `node`.
 
 - Build + start (from repo root, with a git-ignored `.env` present):
   `docker compose up -d --build`
-- `docker-compose.yml` injects runtime config from `.env`
-  (`DATABASE_URL`, `DB_SSL`, `LEADERBOARD_INGEST_TOKEN`) via `env_file`. Secrets
+- `docker-compose.yml` injects runtime config via `environment:` + `${VAR}`
+  substitution (`DATABASE_URL`, `DB_SSL`, `LEADERBOARD_INGEST_TOKEN`). Locally,
+  Docker Compose auto-loads the git-ignored `.env` for interpolation; in
+  Portainer, the stack's "Environment variables" section provides them. Secrets
   are never baked into the image — `.dockerignore` excludes `.env*` from the
   build context.
 - Default `ports: "127.0.0.1:3000:3000"` binds the app to localhost only, so a
