@@ -1,0 +1,22 @@
+# Runs the leaderboard app as a single container. Used either from the CLI
+# (`docker compose up -d --build`) or imported as a stack in Portainer.
+services:
+  app:
+    # Build context/image name. `build: .` builds from the Dockerfile in this dir.
+    build: .
+    image: linkedin-games-leaderboard
+
+    # Restart the container if it (or the Docker daemon) stops.
+    restart: unless-stopped
+
+    # Map host port -> container port. Binding to 127.0.0.1 keeps the app off the
+    # LAN; your Cloudflare tunnel (running on the host) reaches it at localhost.
+    # If you'd rather reach it from other devices on the network, use 3000:3000.
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    # Runtime secrets + config are injected from the git-ignored `.env` on the
+    # host (DATABASE_URL, LEADERBOARD_INGEST_TOKEN, DB_SSL). They are never
+    # baked into the image and never layer-cached.
+    env_file:
+      - .env
