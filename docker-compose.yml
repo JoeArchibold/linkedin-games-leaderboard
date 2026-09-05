@@ -9,11 +9,13 @@ services:
     # Restart the container if it (or the Docker daemon) stops.
     restart: unless-stopped
 
-    # Map host port -> container port. Binding to 127.0.0.1 keeps the app off the
-    # LAN; your Cloudflare tunnel (running on the host) reaches it at localhost.
-    # If you'd rather reach it from other devices on the network, use 3000:3000.
+    # Map host port -> container port. Default binds to 127.0.0.1 so the app is
+    # off the LAN (a Cloudflare tunnel on the host reaches it at localhost).
+    # Override with LEADERBOARD_PORT_BIND, e.g. "3000:3000" to expose it on the
+    # network, or "127.0.0.1:3001:3000" to move the host port. Set it in a local
+    # `.env` or in Portainer's "Environment variables" section.
     ports:
-      - "127.0.0.1:3000:3000"
+      - "${LEADERBOARD_PORT_BIND:-127.0.0.1:3000:3000}"
 
     # Runtime config for the container, sourced via `${VAR}` substitution so the
     # same file works both locally (Docker Compose auto-loads the git-ignored
