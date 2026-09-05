@@ -54,9 +54,10 @@ runtime image only needs `node`.
   Portainer, the stack's "Environment variables" section provides them. Secrets
   are never baked into the image — `.dockerignore` excludes `.env*` from the
   build context.
-- Default `ports: "127.0.0.1:3000:3000"` binds the app to localhost only, so a
-  Cloudflare tunnel on the host reaches it there; use `"3000:3000"` to expose on
-  the LAN.
+- The host port binding is `LEADERBOARD_PORT_BIND` (default `"127.0.0.1:3000:3000"`
+  — localhost only, so a Cloudflare tunnel on the host reaches it there). Override
+  via a local `.env` or Portainer's "Environment variables", e.g. `"3000:3000"`
+  to expose on the LAN.
 - Local standalone smoke-test (no Docker needed): set the env vars, then
   `node .next/standalone/server.js`.
 
