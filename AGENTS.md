@@ -70,6 +70,13 @@ the running user's own scores (stored at the game level) into
 `leaderboard_fetches`, so the API never reads the game-level `score` /
 `no_hints` / `no_mistakes` fields.
 
+## Endpoint: `GET /api/ping`
+
+Unauthenticated liveness check (`{ ok: true, time }`). Hits no DB and no other
+service, so a 200 here means the public network path (Cloudflare tunnel) and the
+app process are both up. Useful for end-to-end routing tests without touching the
+auth'd ingest route.
+
 ## Endpoint: `POST /api/ingest`
 
 Receives one day of results and writes them to Postgres in a single transaction.
