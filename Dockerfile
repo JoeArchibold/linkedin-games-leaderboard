@@ -10,9 +10,11 @@ RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
 
 WORKDIR /app
 
-# Copy manifests first so dependency install is cached as its own layer and only
-# re-runs when package.json / pnpm-lock.yaml actually change.
-COPY package.json pnpm-lock.yaml ./
+# Copy manifests + the pnpm workspace policy first so dependency install is
+# cached as its own layer and only re-runs when these change. pnpm-workspace.yaml
+# is required: its `allowBuilds` policy is what stops pnpm's strictDepBuilds from
+# failing on deps that ship build scripts (e.g. unrs-resolver).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy the full source tree and build. The app intentionally builds without
