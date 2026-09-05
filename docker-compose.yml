@@ -15,8 +15,12 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
 
-    # Runtime secrets + config are injected from the git-ignored `.env` on the
-    # host (DATABASE_URL, LEADERBOARD_INGEST_TOKEN, DB_SSL). They are never
-    # baked into the image and never layer-cached.
-    env_file:
-      - .env
+    # Runtime config for the container, sourced via `${VAR}` substitution so the
+    # same file works both locally (Docker Compose auto-loads the git-ignored
+    # `.env` for interpolation) and in Portainer (which feeds its "Environment
+    # variables" section here). Secrets are never baked into the image. For local
+    # `docker compose up`, put the non-default values in an ignored `.env`.
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DB_SSL: ${DB_SSL:-false}
+      LEADERBOARD_INGEST_TOKEN: ${LEADERBOARD_INGEST_TOKEN}
