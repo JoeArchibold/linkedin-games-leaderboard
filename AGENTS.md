@@ -39,6 +39,25 @@ pnpm start
 > `cmd /c "pnpm <args>"`, or call `pnpm.cmd`. The repo currently has no test
 > runner.
 
+## Production deployment (Docker)
+
+Runs via the multi-stage `Dockerfile` + `docker-compose.yml` at the repo root.
+`next.config.ts` sets `output: "standalone"`, so the build emits a self-contained
+server under `.next/standalone` (server deps like `pg` are traced in) and the
+runtime image only needs `node`.
+
+- Build + start (from repo root, with a git-ignored `.env` present):
+  `docker compose up -d --build`
+- `docker-compose.yml` injects runtime config from `.env`
+  (`DATABASE_URL`, `DB_SSL`, `LEADERBOARD_INGEST_TOKEN`) via `env_file`. Secrets
+  are never baked into the image — `.dockerignore` excludes `.env*` from the
+  build context.
+- Default `ports: "127.0.0.1:3000:3000"` binds the app to localhost only, so a
+  Cloudflare tunnel on the host reaches it there; use `"3000:3000"` to expose on
+  the LAN.
+- Local standalone smoke-test (no Docker needed): set the env vars, then
+  `node .next/standalone/server.js`.
+
 ## Data source
 
 The sibling repo `../linkedin-games-data-collector` (Python + Playwright)
