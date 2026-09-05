@@ -74,14 +74,25 @@ Response `200`:
 ```jsonc
 { "ok": true, "date": "2026-09-04", "ignoredUnknownGames": [], "gamesProcessed": 1, "playersUpserted": 1, "mappingsUpserted": 1 }
 ```
-Errors: `400` (invalid body/date, no known games, invalid number) and `500`
-(DB error). Unknown games are skipped and reported in `ignoredUnknownGames`
-rather than rejecting the whole request (as long as ≥1 known game remains).
+Errors: `401` (missing/invalid bearer token), `400` (invalid body/date, no known
+games, invalid number) and `500` (DB error). Unknown games are skipped and
+reported in `ignoredUnknownGames` rather than rejecting the whole request (as
+long as ≥1 known game remains).
+
+Auth: the route requires `Authorization: Bearer <token>`, where the token is the
+shared secret in the `LEADERBOARD_INGEST_TOKEN` env var (see `src/lib/auth.ts`).
+A request without a valid token is rejected with `401`. Fail-closed: if the env
+var is unset, **every** request is rejected. The collector sends the token from
+its own `LEADERBOARD_API_TOKEN`; keep the two values in sync. The token is
+server-side only and is never sent to the browser.
 
 ## Module map (`src/lib`)
 
 - `db.ts` — `getPool()`: lazy `pg` Pool from `DATABASE_URL` (+ optional `DB_SSL`).
   Created on first use, so `next build` works without env.
+- `auth.ts` — `isValidIngestRequest(request)` / `getIngestToken()`: validates the
+  `Authorization: Bearer <token>` header against `LEADERBOARD_INGEST_TOKEN` with
+  a constant-time compare. Fail-closed when unset.
 - `games.ts` — `GAME_CATALOG` (game name → `scoreUnits: "seconds" | "count"`),
   `isKnownGame`, `getScoreUnits`.
 - `score.ts` — `parseScore(gameName, value)`: mm:ss → integer seconds; `count`
@@ -123,4 +134,7 @@ View `games_by_day_with_updates` adds `leaderboard_last_updated` =
   `game_defs.game_name`. Add a new known game to `GAME_CATALOG` or it will be
   silently skipped (`ignoredUnknownGames`).
 - The `gh` CLI is installed but not on PATH: `C:\Program Files\GitHub CLI\gh.exe`.
+- `POST /api/ingest` is bearer-token authenticated via the server-only
+  `LEADERBOARD_INGEST_TOKEN` env var (never sent to the browser). Set the same
+  value in the collector's `LEADERBOARD_API_TOKEN`.
 - Setup DB locally and copy `.env` from `.env.example` before running the server.
