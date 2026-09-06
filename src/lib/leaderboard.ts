@@ -37,8 +37,8 @@ export interface GameSummary {
 /**
  * Return the top `topN` scores per known game for a given date, in catalog order.
  *
- * Phase A intentionally returns every recorded player (no visibility filter); the
- * `is_on_public_leaderboard` flag is applied in Phase B.
+ * Only players whose `is_on_public_leaderboard` flag is true are shown (admins
+ * opt them in via the dashboard).
  *
  * Scores are stored as integers, ordered ascending — lower is better for both
  * timed games (mm:ss -> seconds) and count games (fewer guesses is better).
@@ -61,6 +61,7 @@ export async function getDaySummary(
        JOIN players p        ON p.player_id = m.player_id
       WHERE gd.date = $1
         AND g.game_name = ANY($2::text[])
+        AND p.is_on_public_leaderboard = TRUE
       ORDER BY g.game_name, m.score ASC`,
     [dateISO, gameKeys]
   );
@@ -101,6 +102,7 @@ export async function getGameDay(
        JOIN players p        ON p.player_id = m.player_id
       WHERE gd.date = $1
         AND g.game_name = $2
+        AND p.is_on_public_leaderboard = TRUE
       ORDER BY m.score ASC`,
     [dateISO, gameName]
   );
