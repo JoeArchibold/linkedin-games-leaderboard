@@ -53,7 +53,7 @@ export default async function GamePage({
           <tbody>
             {rows.map((r, i) => (
               <tr key={`${slug}-${r.playerName}-${i}`}>
-                <td>{i + 1}</td>
+                <td>{r.rank}</td>
                 <td>{r.playerName}</td>
                 <td>{formatScore(slug, r.score)}</td>
                 <td>{r.noHints ? "✓" : ""}</td>

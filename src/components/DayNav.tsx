@@ -24,7 +24,7 @@ export default function DayNav({
     <nav className="day-nav">
       <Link href={`${basePath}${sep}date=${prev}`}>← Prev</Link>
       <span className="day-nav-current">{current}</span>
-      {atMax ? <span aria-disabled>Next →</span> : <Link href={`${basePath}${sep}date=${next}`}>Next →</Link>}
+      {!atMax && <Link href={`${basePath}${sep}date=${next}`}>Next →</Link>}
     </nav>
   );
 }

@@ -138,6 +138,11 @@ a {
   opacity: 0.6;
 }
 
+/* On the game page, space between the "All games" back link and the empty message. */
+.back + .empty {
+  margin-top: 1rem;
+}
+
 .board {
   width: 100%;
   border-collapse: collapse;

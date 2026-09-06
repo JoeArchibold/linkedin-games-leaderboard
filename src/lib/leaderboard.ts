@@ -2,11 +2,31 @@ import type { Pool } from "pg";
 
 import { GAME_CATALOG } from "./games";
 
-export interface LeaderboardRow {
+export interface LeaderboardEntry {
   playerName: string;
   score: number;
   noHints: boolean;
   noMistakes: boolean;
+}
+
+/** A leaderboard entry with its competition rank (sorted best-first). */
+export type LeaderboardRow = LeaderboardEntry & { rank: number };
+
+/**
+ * Assign competition ranks to rows already sorted best-first (ascending score).
+ * Equal scores share a rank and a later distinct score skips the gap, e.g.
+ * scores 10,10,12 -> ranks 1,1,3.
+ */
+export function assignRanks(rows: LeaderboardEntry[]): LeaderboardRow[] {
+  let rank = 0;
+  let prevScore: number | null = null;
+  return rows.map((row, index) => {
+    if (prevScore === null || row.score !== prevScore) {
+      rank = index + 1;
+      prevScore = row.score;
+    }
+    return { ...row, rank };
+  });
 }
 
 export interface GameSummary {
@@ -45,7 +65,7 @@ export async function getDaySummary(
     [dateISO, gameKeys]
   );
 
-  const byGame = new Map<string, LeaderboardRow[]>();
+  const byGame = new Map<string, LeaderboardEntry[]>();
   for (const row of res.rows) {
     const list = byGame.get(row.game) ?? [];
     list.push({
@@ -57,10 +77,11 @@ export async function getDaySummary(
     byGame.set(row.game, list);
   }
 
-  return gameKeys.map((game) => ({
-    game,
-    rows: (byGame.get(game) ?? []).slice(0, topN),
-  }));
+  return gameKeys.map((game) => {
+    const ranked = assignRanks(byGame.get(game) ?? []);
+    // Include all rows sharing the Nth rank so a tie at the cutoff isn't truncated.
+    return { game, rows: ranked.filter((row) => row.rank <= topN) };
+  });
 }
 
 /** Return every recorded score for one game on a date, ordered best-first. */
@@ -84,10 +105,12 @@ export async function getGameDay(
     [dateISO, gameName]
   );
 
-  return res.rows.map((r) => ({
-    playerName: r.player,
-    score: r.score,
-    noHints: r.no_hints,
-    noMistakes: r.no_mistake,
-  }));
+  return assignRanks(
+    res.rows.map((r) => ({
+      playerName: r.player,
+      score: r.score,
+      noHints: r.no_hints,
+      noMistakes: r.no_mistake,
+    }))
+  );
 }

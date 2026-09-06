@@ -44,7 +44,7 @@ export default async function Home({
               <ol className="rows">
                 {g.rows.map((r, i) => (
                   <li key={`${g.game}-${r.playerName}-${i}`}>
-                    <span className="place">{i + 1}</span>
+                    <span className="place">{r.rank}</span>
                     <span className="name">{r.playerName}</span>
                     {(r.noHints || r.noMistakes) && (
                       <span className="badges">
