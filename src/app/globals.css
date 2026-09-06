@@ -138,6 +138,23 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+.rows .count {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* Caption under the /all-time nav, above the leaderboards. */
+.subtitle {
+  margin: 0.75rem 0 1.5rem;
+  opacity: 0.6;
+}
+
+/* Space between the daily<->all-time switch button and the leaderboards grid. */
+.back + .games {
+  margin-top: 1.5rem;
+}
+
 /* Current time-window tab on /all-time. */
 .day-nav a.active {
   border-width: 2px;

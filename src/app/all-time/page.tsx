@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { getPool } from "@/lib/db";
 import { formatAverage } from "@/lib/format";
-import { addDaysISO, isValidISODate, linkedInTodayISO } from "@/lib/date";
+import { addDaysISO, linkedInTodayISO } from "@/lib/date";
 import { getDisplayName } from "@/lib/games";
 import { getAllTime } from "@/lib/leaderboard";
 
@@ -44,14 +44,12 @@ export default async function AllTime({
       <Link className="back" href="/">
         ← Today
       </Link>
+      <p className="subtitle">Top {TOP_N} averages over {label.toLowerCase()}</p>
 
       <div className="games">
         {games.map((g) => (
           <section key={g.game} className="card">
             <h2>{getDisplayName(g.game)}</h2>
-            <p className="empty">
-              {label} · minimum {TOP_N} shown
-            </p>
             {g.rows.length === 0 ? (
               <p className="empty">No scores in this window.</p>
             ) : (
@@ -61,6 +59,9 @@ export default async function AllTime({
                     <span className="place">{r.rank}</span>
                     <span className="name">{r.playerName}</span>
                     <span className="avg">{formatAverage(g.game, r.score)}</span>
+                    <span className="count">
+                      {r.gamesCount} game{r.gamesCount === 1 ? "" : "s"}
+                    </span>
                   </li>
                 ))}
               </ol>
