@@ -47,10 +47,23 @@ in phases and merged into the `development` branch (which later merges into
 
 ## Status
 
-- [ ] Phase A — foundation
+- [x] Phase A — foundation (visibility column + migrations runner, query module,
+  `/` summary + `/game/[slug]`, day switching; shows **all** players, flag unused)
 - [ ] Phase B — privacy + admin dashboard
 - [ ] Phase C — all-time leaderboard
 - [ ] Phase D — polish
+
+## Phase A decisions (recorded)
+
+- Visibility is per-player, global (a single `is_on_public_leaderboard` boolean on
+  `players`). Privacy default = hidden (`FALSE`); admins opt players in (Phase B).
+- Public routes: `/` = daily summary (top 5 per game, catalog order); `/game/[slug]`
+  = full day board; all day switching via `?date=YYYY-MM-DD` (default today,
+  LinkedIn/Pacific). "Next" day disabled on today.
+- Schema is changed via `db/migrations/` + `db/migrate.mjs` (`pnpm migrate`);
+  applied & tracked in `schema_migrations`.
+- Phase A intentionally does **not** filter on the visibility flag yet — the flag
+  takes effect in Phase B.
 
 ## Open questions / uncertainties
 
