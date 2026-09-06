@@ -1,20 +1,16 @@
 import Link from "next/link";
 
+import RangeNav from "@/components/RangeNav";
 import { getPool } from "@/lib/db";
 import { formatAverage } from "@/lib/format";
 import { addDaysISO, linkedInTodayISO } from "@/lib/date";
 import { getDisplayName } from "@/lib/games";
 import { getAllTime } from "@/lib/leaderboard";
+import { RANGES, resolveRange } from "@/lib/ranges";
 
 export const dynamic = "force-dynamic";
 
-const TOP_N = 10;
-
-const RANGES: Record<string, { label: string; days: number | null }> = {
-  all: { label: "All time", days: null },
-  "30d": { label: "Last 30 days", days: 30 },
-  "7d": { label: "Last 7 days", days: 7 },
-};
+const TOP_N = 5;
 
 export default async function AllTime({
   searchParams,
@@ -22,8 +18,8 @@ export default async function AllTime({
   searchParams: Promise<{ range?: string }>;
 }) {
   const { range } = await searchParams;
-  const key = range && RANGES[range] ? range : "all";
-  const { label, days } = RANGES[key];
+  const key = resolveRange(range);
+  const days = RANGES[key].days;
 
   const today = linkedInTodayISO();
   const cutoff = days === null ? null : addDaysISO(today, -(days - 1)); // inclusive window ending today
@@ -34,22 +30,17 @@ export default async function AllTime({
   return (
     <main className="page">
       <h1>All-time leaderboard</h1>
-      <nav className="day-nav">
-        {Object.entries(RANGES).map(([k, r]) => (
-          <Link key={k} href={`/all-time?range=${k}`} className={k === key ? "active" : undefined}>
-            {r.label}
-          </Link>
-        ))}
-      </nav>
+      <RangeNav basePath="/all-time" active={key} />
       <Link className="back" href="/">
         ← Today
       </Link>
-      <p className="subtitle">Top {TOP_N} averages over {label.toLowerCase()}</p>
 
       <div className="games">
         {games.map((g) => (
           <section key={g.game} className="card">
-            <h2>{getDisplayName(g.game)}</h2>
+            <h2>
+              <Link href={`/all-time/${g.game}?range=${key}`}>{getDisplayName(g.game)}</Link>
+            </h2>
             {g.rows.length === 0 ? (
               <p className="empty">No scores in this window.</p>
             ) : (

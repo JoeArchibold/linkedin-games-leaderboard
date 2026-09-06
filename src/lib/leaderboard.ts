@@ -172,3 +172,50 @@ export async function getAllTime(
     return { game, rows: ranked.filter((row) => row.rank <= topN) };
   });
 }
+
+/** A player's all-time average for a game, with hint/mistake percentages. */
+export interface AllTimePlayerRow extends AllTimeRow {
+  /** Fraction (0..1) of this player's games in the window with no hints. */
+  noHintsPct: number;
+  /** Fraction (0..1) of this player's games in the window with no mistakes. */
+  noMistakesPct: number;
+}
+
+/**
+ * Every visible player's average (and hint/mistake %) for ONE game over a window.
+ * `cutoffISO` (inclusive) limits the window; `null` = all time. Pinpoint games
+ * never use hints, so the caller omits the no-hints % for them.
+ */
+export async function getAllTimeGame(
+  pool: Pool,
+  gameName: string,
+  cutoffISO: string | null
+): Promise<AllTimePlayerRow[]> {
+  const res = await pool.query(
+    `SELECT p.player_name AS player,
+            AVG(m.score)::numeric AS avg,
+            COUNT(*)::int AS games,
+            (COUNT(*) FILTER (WHERE m.no_hints))::numeric / COUNT(*)::numeric AS no_hints_pct,
+            (COUNT(*) FILTER (WHERE m.no_mistake))::numeric / COUNT(*)::numeric AS no_mistakes_pct
+       FROM player_game_mapping m
+       JOIN games_by_day gd ON gd.game_id = m.game_id AND gd.game_number = m.game_number
+       JOIN game_defs g     ON g.game_id = gd.game_id
+       JOIN players p       ON p.player_id = m.player_id
+      WHERE p.is_on_public_leaderboard = TRUE
+        AND g.game_name = $1
+        AND ($2::date IS NULL OR gd.date >= $2::date)
+      GROUP BY p.player_name
+      ORDER BY AVG(m.score) ASC`,
+    [gameName, cutoffISO]
+  );
+
+  return assignRanks(
+    res.rows.map((r) => ({
+      playerName: r.player,
+      score: Number(r.avg),
+      gamesCount: Number(r.games),
+      noHintsPct: Number(r.no_hints_pct),
+      noMistakesPct: Number(r.no_mistakes_pct),
+    }))
+  );
+}
