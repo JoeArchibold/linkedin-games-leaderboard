@@ -143,6 +143,40 @@ a {
   margin-top: 1rem;
 }
 
+/* Admin: space between the intro description and the "View leaderboard" link. */
+.empty + .back {
+  margin-top: 1rem;
+}
+
+/* Login/admin forms: stack the fields with breathing room. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  max-width: 22rem;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form input,
+.form button {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--foreground);
+  border-radius: 0.4rem;
+  color: var(--foreground);
+  background: transparent;
+}
+
+.form button {
+  cursor: pointer;
+  align-self: flex-start;
+}
+
 .board {
   width: 100%;
   border-collapse: collapse;
