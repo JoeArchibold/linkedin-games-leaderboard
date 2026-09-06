@@ -137,8 +137,9 @@ server-side only and is never sent to the browser.
 - `format.ts` — `formatScore(gameName, score)`: integer → `m:ss` (seconds games)
   or plain number (count games); `null` → `"-"`.
 - `leaderboard.ts` — public-facing queries: `getDaySummary(pool, dateISO, topN)`
-  (top N per game) and `getGameDay(pool, gameName, dateISO)` (full day board).
-  Filters to `players.is_on_public_leaderboard = TRUE`.
+  (top N per game), `getGameDay(pool, gameName, dateISO)` (full day board), and
+  `getAllTime(pool, cutoffISO, topN)` (top N per game by average, optional window).
+  Filters to `players.is_on_public_leaderboard = TRUE`. Also exports `assignRanks`.
 - `admin.ts` — admin session auth (`LEADERBOARD_ADMIN_PASSWORD`): verify password,
   HMAC-signed httpOnly cookie (`leaderboard_admin`), `isValidSessionToken`.
 - `visibility.ts` — `listPlayerVisibility(pool)`, `setPlayerVisibility(pool, id, v)`
@@ -151,6 +152,9 @@ request and are not prerendered at build time.
 
 - `/` — daily summary (top 5 per game, catalog order) for a selected day.
 - `/game/[slug]` — full day leaderboard for one game.
+- `/all-time` — top players per game by average score over a time window
+  (`?range=all|30d|7d`, default all-time). Averages skip days a player didn't play
+  and rank by the average (ties share a rank).
 - Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
 - `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
 - Only players with `players.is_on_public_leaderboard = TRUE` are shown (hidden by

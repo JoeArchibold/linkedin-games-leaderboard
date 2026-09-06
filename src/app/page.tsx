@@ -29,6 +29,9 @@ export default async function Home({
     <main className="page">
       <h1>Leaderboard</h1>
       <DayNav current={selected} maxDate={today} basePath="/" />
+      <Link className="back" href="/all-time">
+        All-time →
+      </Link>
 
       <div className="games">
         {summary.map((g) => (

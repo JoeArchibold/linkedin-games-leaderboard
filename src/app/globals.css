@@ -133,8 +133,15 @@ a {
   opacity: 0.75;
 }
 
-.rows .score {
+.rows .score,
+.rows .avg {
   font-variant-numeric: tabular-nums;
+}
+
+/* Current time-window tab on /all-time. */
+.day-nav a.active {
+  border-width: 2px;
+  font-weight: 600;
 }
 
 .empty {
