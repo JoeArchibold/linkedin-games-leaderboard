@@ -47,3 +47,111 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Leaderboard */
+.page {
+  width: min(52rem, 92vw);
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.page h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.day-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.75rem 0 1.5rem;
+}
+
+.day-nav a,
+.back {
+  color: var(--foreground);
+  border: 1px solid var(--foreground);
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.day-nav-current {
+  opacity: 0.7;
+}
+
+.games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--foreground);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.card h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.rows {
+  list-style: none;
+}
+
+.rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+}
+
+.rows .place {
+  width: 1.5rem;
+  opacity: 0.7;
+}
+
+.rows .name {
+  flex: 1;
+}
+
+.badges {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  border-radius: 0.3rem;
+  border: 1px solid var(--foreground);
+  opacity: 0.75;
+}
+
+.rows .score {
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  opacity: 0.6;
+}
+
+/* On the game page, space between the "All games" back link and the empty message. */
+.back + .empty {
+  margin-top: 1rem;
+}
+
+.board {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.board th,
+.board td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--foreground);
+}

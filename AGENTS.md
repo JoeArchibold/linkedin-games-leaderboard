@@ -132,13 +132,34 @@ server-side only and is never sent to the browser.
   games → `NormalizeResult { day, ignoredUnknownGames }`.
 - `ingest.ts` — `ingestDay(pool, day)`: one transaction; upserts `game_defs`,
   `players`, `games_by_day`, `player_game_mapping`.
+- `date.ts` — `linkedInTodayISO()`, `addDaysISO()`, `isValidISODate()`: day helpers
+  using LinkedIn's (America/Los_Angeles) time zone.
+- `format.ts` — `formatScore(gameName, score)`: integer → `m:ss` (seconds games)
+  or plain number (count games); `null` → `"-"`.
+- `leaderboard.ts` — public-facing queries: `getDaySummary(pool, dateISO, topN)`
+  (top N per game) and `getGameDay(pool, gameName, dateISO)` (full day board).
+
+## Public pages
+
+Server-rendered, `export const dynamic = "force-dynamic"` so they read the DB per
+request and are not prerendered at build time.
+
+- `/` — daily summary (top 5 per game, catalog order) for a selected day.
+- `/game/[slug]` — full day leaderboard for one game.
+- Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
+- `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
+
+Phase A shows **every** recorded player. The privacy flag (`players.is_on_public_leaderboard`,
+added by migration, default `FALSE` = hidden) is NOT filtered yet — it is wired in
+Phase B.
 
 ## Database (`init_db.sql`)
 
 Tables (each upsertable by its natural key):
 
 - `game_defs` — `game_id` (identity), `game_name` **UNIQUE**, `score_units`.
-- `players` — `player_id` (identity), `player_name` **UNIQUE**, `external_id`.
+- `players` — `player_id` (identity), `player_name` **UNIQUE**, `external_id`
+  (+ `is_on_public_leaderboard` BOOLEAN, added by a migration; see below).
 - `games_by_day` — PK `(game_id, game_number)`, `date`, `avg_score` (nullable),
   `finalized`, `avg_last_updated` (defaults `now()`).
 - `player_game_mapping` — PK `(player_id, game_id, game_number)`, `score`,
@@ -146,6 +167,12 @@ Tables (each upsertable by its natural key):
 
 View `games_by_day_with_updates` adds `leaderboard_last_updated` =
 `max(updated_ts)` over the matching `player_game_mapping` rows.
+
+Schema changes beyond `init_db.sql` are applied via migrations: numbered SQL files
+in `db/migrations/` (e.g. `001_add_player_public_visibility.sql`), applied and
+tracked by `db/migrate.mjs` in a `schema_migrations` table. Run with `pnpm migrate`
+(or `node db/migrate.mjs` from the repo root); the runner reads `DATABASE_URL` +
+`DB_SSL` from the repo-root `.env` if they aren't in the environment.
 
 ## Score semantics
 

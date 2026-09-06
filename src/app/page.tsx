@@ -1,69 +1,73 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
 
-export default function Home() {
+import DayNav from "@/components/DayNav";
+import { getPool } from "@/lib/db";
+import { formatScore } from "@/lib/format";
+import { linkedInTodayISO, isValidISODate } from "@/lib/date";
+import { getDisplayName } from "@/lib/games";
+import { getDaySummary } from "@/lib/leaderboard";
+
+// Read the DB on every request so the page reflects the latest ingest and is not
+// prerendered at build time (build has no DATABASE_URL).
+export const dynamic = "force-dynamic";
+
+const TOP_N = 5;
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const { date } = await searchParams;
+  const today = linkedInTodayISO();
+  const selected = isValidISODate(date) ? date : today;
+
+  const pool = getPool();
+  const summary = await getDaySummary(pool, selected, TOP_N);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="page">
+      <h1>Leaderboard</h1>
+      <DayNav current={selected} maxDate={today} basePath="/" />
+
+      <div className="games">
+        {summary.map((g) => (
+          <section key={g.game} className="card">
+            <h2>
+              <Link href={`/game/${g.game}?date=${selected}`}>
+                {getDisplayName(g.game)}
+              </Link>
+            </h2>
+            {g.rows.length === 0 ? (
+              <p className="empty">No scores recorded for this day.</p>
+            ) : (
+              <ol className="rows">
+                {g.rows.map((r, i) => (
+                  <li key={`${g.game}-${r.playerName}-${i}`}>
+                    <span className="place">{r.rank}</span>
+                    <span className="name">{r.playerName}</span>
+                    {(r.noHints || r.noMistakes) && (
+                      <span className="badges">
+                        {r.noHints && (
+                          <span className="badge" title="No hints">
+                            H
+                          </span>
+                        )}
+                        {r.noMistakes && (
+                          <span className="badge" title="No mistakes">
+                            M
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    <span className="score">{formatScore(g.game, r.score)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        ))}
+      </div>
+    </main>
   );
 }
