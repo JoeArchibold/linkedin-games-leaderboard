@@ -49,9 +49,13 @@ in phases and merged into the `development` branch (which later merges into
 
 - [x] Phase A — foundation (visibility column + migrations runner, query module,
   `/` summary + `/game/[slug]`, day switching; shows **all** players, flag unused)
-- [ ] Phase B — privacy + admin dashboard
+- [ ] Phase B — privacy + admin dashboard (applies the visibility migration)
 - [ ] Phase C — all-time leaderboard
 - [ ] Phase D — polish
+
+Follow-up (end of the feature):
+- [ ] Fold the `players.is_on_public_leaderboard` column into `init_db.sql` so
+  fresh installs get it directly (not only via the migration file).
 
 ## Phase A decisions (recorded)
 
@@ -61,9 +65,12 @@ in phases and merged into the `development` branch (which later merges into
   = full day board; all day switching via `?date=YYYY-MM-DD` (default today,
   LinkedIn/Pacific). "Next" day disabled on today.
 - Schema is changed via `db/migrations/` + `db/migrate.mjs` (`pnpm migrate`);
-  applied & tracked in `schema_migrations`.
+  applied & tracked in `schema_migrations`. The migration is **created but not
+  applied** — it will be run in Phase B.
 - Phase A intentionally does **not** filter on the visibility flag yet — the flag
   takes effect in Phase B.
+- At the end of the feature, the same column will be folded into `init_db.sql`
+  (fresh installs) via the follow-up task above.
 
 ## Open questions / uncertainties
 
