@@ -96,11 +96,6 @@ a {
   margin-bottom: 0.5rem;
 }
 
-.units {
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
-
 .rows {
   list-style: none;
 }
@@ -119,6 +114,20 @@ a {
 
 .rows .name {
   flex: 1;
+}
+
+.badges {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  border-radius: 0.3rem;
+  border: 1px solid var(--foreground);
+  opacity: 0.75;
 }
 
 .rows .score {

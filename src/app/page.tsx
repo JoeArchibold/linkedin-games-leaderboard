@@ -4,7 +4,7 @@ import DayNav from "@/components/DayNav";
 import { getPool } from "@/lib/db";
 import { formatScore } from "@/lib/format";
 import { linkedInTodayISO, isValidISODate } from "@/lib/date";
-import { GAME_CATALOG } from "@/lib/games";
+import { getDisplayName } from "@/lib/games";
 import { getDaySummary } from "@/lib/leaderboard";
 
 // Read the DB on every request so the page reflects the latest ingest and is not
@@ -31,32 +31,42 @@ export default async function Home({
       <DayNav current={selected} maxDate={today} basePath="/" />
 
       <div className="games">
-        {summary.map((g) => {
-          const units = GAME_CATALOG[g.game]?.scoreUnits ?? "seconds";
-          const label = units === "count" ? "guesses" : "time";
-          return (
-            <section key={g.game} className="card">
-              <h2>
-                <Link href={`/game/${g.game}?date=${selected}`}>
-                  {g.game} <span className="units">({label})</span>
-                </Link>
-              </h2>
-              {g.rows.length === 0 ? (
-                <p className="empty">No scores recorded for this day.</p>
-              ) : (
-                <ol className="rows">
-                  {g.rows.map((r, i) => (
-                    <li key={`${g.game}-${r.playerName}-${i}`}>
-                      <span className="place">{i + 1}</span>
-                      <span className="name">{r.playerName}</span>
-                      <span className="score">{formatScore(g.game, r.score)}</span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </section>
-          );
-        })}
+        {summary.map((g) => (
+          <section key={g.game} className="card">
+            <h2>
+              <Link href={`/game/${g.game}?date=${selected}`}>
+                {getDisplayName(g.game)}
+              </Link>
+            </h2>
+            {g.rows.length === 0 ? (
+              <p className="empty">No scores recorded for this day.</p>
+            ) : (
+              <ol className="rows">
+                {g.rows.map((r, i) => (
+                  <li key={`${g.game}-${r.playerName}-${i}`}>
+                    <span className="place">{i + 1}</span>
+                    <span className="name">{r.playerName}</span>
+                    {(r.noHints || r.noMistakes) && (
+                      <span className="badges">
+                        {r.noHints && (
+                          <span className="badge" title="No hints">
+                            H
+                          </span>
+                        )}
+                        {r.noMistakes && (
+                          <span className="badge" title="No mistakes">
+                            M
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    <span className="score">{formatScore(g.game, r.score)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        ))}
       </div>
     </main>
   );

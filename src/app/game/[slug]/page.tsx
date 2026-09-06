@@ -5,7 +5,7 @@ import DayNav from "@/components/DayNav";
 import { getPool } from "@/lib/db";
 import { formatScore } from "@/lib/format";
 import { linkedInTodayISO, isValidISODate } from "@/lib/date";
-import { GAME_CATALOG, isKnownGame } from "@/lib/games";
+import { getDisplayName, isKnownGame } from "@/lib/games";
 import { getGameDay } from "@/lib/leaderboard";
 
 export const dynamic = "force-dynamic";
@@ -27,12 +27,10 @@ export default async function GamePage({
   const pool = getPool();
   const rows = await getGameDay(pool, slug, selected);
 
-  const units = GAME_CATALOG[slug]?.scoreUnits ?? "seconds";
-
   return (
     <main className="page">
       <h1>
-        {slug} — {selected}
+        {getDisplayName(slug)} — {selected}
       </h1>
       <DayNav current={selected} maxDate={today} basePath={`/game/${slug}`} />
       <Link className="back" href={`/?date=${selected}`}>
@@ -47,7 +45,7 @@ export default async function GamePage({
             <tr>
               <th>#</th>
               <th>Player</th>
-              <th>{units === "count" ? "Guesses" : "Time"}</th>
+              <th>Score</th>
               <th>No hints</th>
               <th>No mistakes</th>
             </tr>
