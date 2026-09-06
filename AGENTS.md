@@ -138,6 +138,11 @@ server-side only and is never sent to the browser.
   or plain number (count games); `null` → `"-"`.
 - `leaderboard.ts` — public-facing queries: `getDaySummary(pool, dateISO, topN)`
   (top N per game) and `getGameDay(pool, gameName, dateISO)` (full day board).
+  Filters to `players.is_on_public_leaderboard = TRUE`.
+- `admin.ts` — admin session auth (`LEADERBOARD_ADMIN_PASSWORD`): verify password,
+  HMAC-signed httpOnly cookie (`leaderboard_admin`), `isValidSessionToken`.
+- `visibility.ts` — `listPlayerVisibility(pool)`, `setPlayerVisibility(pool, id, v)`
+  for the admin dashboard.
 
 ## Public pages
 
@@ -148,10 +153,18 @@ request and are not prerendered at build time.
 - `/game/[slug]` — full day leaderboard for one game.
 - Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
 - `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
+- Only players with `players.is_on_public_leaderboard = TRUE` are shown (hidden by
+  default; admins opt them in).
 
-Phase A shows **every** recorded player. The privacy flag (`players.is_on_public_leaderboard`,
-added by migration, default `FALSE` = hidden) is NOT filtered yet — it is wired in
-Phase B.
+## Admin dashboard
+
+- `/admin/login` — shared-password login (server action in `src/app/admin/actions.ts`),
+  gated by the `LEADERBOARD_ADMIN_PASSWORD` env var. On success it sets an httpOnly,
+  HMAC-signed cookie (`leaderboard_admin`, 7-day TTL); no session table.
+- `/admin` — lists recorded players with their visibility and a Show/Hide toggle
+  (server action `setVisibility`), then `revalidatePath` so public pages refresh.
+- Both routes are `force-dynamic` and refuse access when the cookie is invalid or
+  the password env var is unset.
 
 ## Database (`init_db.sql`)
 
