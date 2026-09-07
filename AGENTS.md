@@ -155,8 +155,10 @@ request and are not prerendered at build time.
 - `/` — daily summary (top 5 per game, catalog order) for a selected day.
 - `/game/[slug]` — full day leaderboard for one game.
 - `/all-time` — top 5 players per game by average over a time window
-  (`?range=all|30d|7d`, default all-time). Averages skip days a player didn't
-  play; ties share a rank. Game names link to the full per-game page.
+  (`?range=all|30d|7d`, default all-time). The average skips days a player didn't
+  play; there is **no minimum-games threshold** (a single great score can top the
+  list); **all** recorded days count (including provisional today); ties share a
+  rank. Game names link to the full per-game page.
 - `/all-time/[slug]` — per-game all-time averages for every visible player, with
   the share of games with no hints / no mistakes shown as percentages (pinpoint
   omits the no-hints %, since hints can't be used there).
@@ -198,7 +200,10 @@ Schema changes beyond `init_db.sql` are applied via migrations: numbered SQL fil
 in `db/migrations/` (e.g. `001_add_player_public_visibility.sql`), applied and
 tracked by `db/migrate.mjs` in a `schema_migrations` table. Run with `pnpm migrate`
 (or `node db/migrate.mjs` from the repo root); the runner reads `DATABASE_URL` +
-`DB_SSL` from the repo-root `.env` if they aren't in the environment.
+`DB_SSL` from the repo-root `.env` if they aren't in the environment. Note that
+`ALTER TABLE` (and hence the runner) must run as a role that owns the tables —
+ownership was transferred to `leaderboard_app` so `pnpm migrate` works under the
+app user; if you set the tables up as `postgres`, re-own them before migrating.
 
 ## Score semantics
 
