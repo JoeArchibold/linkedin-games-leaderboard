@@ -133,8 +133,26 @@ a {
   opacity: 0.75;
 }
 
-.rows .score {
+.rows .score,
+.rows .avg {
   font-variant-numeric: tabular-nums;
+}
+
+.rows .count {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* Space between the daily<->all-time switch button and the leaderboards grid. */
+.back + .games {
+  margin-top: 1.5rem;
+}
+
+/* Current time-window tab on /all-time. */
+.day-nav a.active {
+  border-width: 2px;
+  font-weight: 600;
 }
 
 .empty {

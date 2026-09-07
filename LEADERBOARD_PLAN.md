@@ -51,7 +51,8 @@ in phases and merged into the `development` branch (which later merges into
   `/` summary + `/game/[slug]`, day switching; shows **all** players, flag unused)
 - [x] Phase B — privacy + admin dashboard (applied visibility migration, `is_on_public_leaderboard`
   filter wired, `/admin` login + Show/Hide dashboard)
-- [ ] Phase C — all-time leaderboard
+- [x] Phase C — all-time leaderboard (`/all-time` top 5 per game, `/all-time/[slug]`
+  full per-game averages with no-hints/no-mistakes %, windows `all|30d|7d`)
 - [ ] Phase D — polish
 
 Follow-up (end of the feature):

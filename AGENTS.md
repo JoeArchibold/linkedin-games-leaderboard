@@ -137,8 +137,11 @@ server-side only and is never sent to the browser.
 - `format.ts` — `formatScore(gameName, score)`: integer → `m:ss` (seconds games)
   or plain number (count games); `null` → `"-"`.
 - `leaderboard.ts` — public-facing queries: `getDaySummary(pool, dateISO, topN)`
-  (top N per game) and `getGameDay(pool, gameName, dateISO)` (full day board).
-  Filters to `players.is_on_public_leaderboard = TRUE`.
+  (top N per game), `getGameDay(pool, gameName, dateISO)` (full day board),
+  `getAllTime(pool, cutoffISO, topN)` (top N per game by average, optional window)
+  and `getAllTimeGame(pool, gameName, cutoffISO)` (per-game all-time averages with
+  no-hints/no-mistakes percentages). Filters to
+  `players.is_on_public_leaderboard = TRUE`. Also exports `assignRanks`.
 - `admin.ts` — admin session auth (`LEADERBOARD_ADMIN_PASSWORD`): verify password,
   HMAC-signed httpOnly cookie (`leaderboard_admin`), `isValidSessionToken`.
 - `visibility.ts` — `listPlayerVisibility(pool)`, `setPlayerVisibility(pool, id, v)`
@@ -151,6 +154,12 @@ request and are not prerendered at build time.
 
 - `/` — daily summary (top 5 per game, catalog order) for a selected day.
 - `/game/[slug]` — full day leaderboard for one game.
+- `/all-time` — top 5 players per game by average over a time window
+  (`?range=all|30d|7d`, default all-time). Averages skip days a player didn't
+  play; ties share a rank. Game names link to the full per-game page.
+- `/all-time/[slug]` — per-game all-time averages for every visible player, with
+  the share of games with no hints / no mistakes shown as percentages (pinpoint
+  omits the no-hints %, since hints can't be used there).
 - Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
 - `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
 - Only players with `players.is_on_public_leaderboard = TRUE` are shown (hidden by

@@ -13,11 +13,12 @@ export interface LeaderboardEntry {
 export type LeaderboardRow = LeaderboardEntry & { rank: number };
 
 /**
- * Assign competition ranks to rows already sorted best-first (ascending score).
+ * Assign competition ranks to rows already sorted best-first (ascending `score`).
  * Equal scores share a rank and a later distinct score skips the gap, e.g.
- * scores 10,10,12 -> ranks 1,1,3.
+ * scores 10,10,12 -> ranks 1,1,3. Works for any row type carrying a numeric
+ * `score` (e.g. integer daily scores or all-time averages).
  */
-export function assignRanks(rows: LeaderboardEntry[]): LeaderboardRow[] {
+export function assignRanks<T extends { score: number }>(rows: T[]): (T & { rank: number })[] {
   let rank = 0;
   let prevScore: number | null = null;
   return rows.map((row, index) => {
@@ -113,6 +114,108 @@ export async function getGameDay(
       score: r.score,
       noHints: r.no_hints,
       noMistakes: r.no_mistake,
+    }))
+  );
+}
+
+/** A player's all-time average for a game (`score` is the average). */
+export interface AllTimeRow {
+  playerName: string;
+  score: number;
+  gamesCount: number;
+  rank: number;
+}
+
+export interface AllTimeGame {
+  game: string;
+  rows: AllTimeRow[];
+}
+
+/**
+ * Top `topN` players per game by average score, for visible players only.
+ * `cutoffISO` (inclusive) limits the window; `null` = all time. The average is
+ * over the games a player actually recorded (absent days are skipped), so a
+ * player who played once can top the list.
+ */
+export async function getAllTime(
+  pool: Pool,
+  cutoffISO: string | null,
+  topN: number
+): Promise<AllTimeGame[]> {
+  const gameKeys = Object.keys(GAME_CATALOG);
+  const res = await pool.query(
+    `SELECT g.game_name AS game,
+            p.player_name AS player,
+            AVG(m.score)::numeric AS avg,
+            COUNT(m.score)::int AS games
+       FROM player_game_mapping m
+       JOIN games_by_day gd ON gd.game_id = m.game_id AND gd.game_number = m.game_number
+       JOIN game_defs g     ON g.game_id = gd.game_id
+       JOIN players p       ON p.player_id = m.player_id
+      WHERE p.is_on_public_leaderboard = TRUE
+        AND g.game_name = ANY($1::text[])
+        AND ($2::date IS NULL OR gd.date >= $2::date)
+      GROUP BY g.game_name, p.player_name
+      ORDER BY g.game_name, AVG(m.score) ASC`,
+    [gameKeys, cutoffISO]
+  );
+
+  const byGame = new Map<string, AllTimeRow[]>();
+  for (const row of res.rows) {
+    const list = byGame.get(row.game) ?? [];
+    list.push({ playerName: row.player, score: Number(row.avg), gamesCount: Number(row.games), rank: 0 });
+    byGame.set(row.game, list);
+  }
+
+  return gameKeys.map((game) => {
+    const ranked = assignRanks(byGame.get(game) ?? []);
+    return { game, rows: ranked.filter((row) => row.rank <= topN) };
+  });
+}
+
+/** A player's all-time average for a game, with hint/mistake percentages. */
+export interface AllTimePlayerRow extends AllTimeRow {
+  /** Fraction (0..1) of this player's games in the window with no hints. */
+  noHintsPct: number;
+  /** Fraction (0..1) of this player's games in the window with no mistakes. */
+  noMistakesPct: number;
+}
+
+/**
+ * Every visible player's average (and hint/mistake %) for ONE game over a window.
+ * `cutoffISO` (inclusive) limits the window; `null` = all time. Pinpoint games
+ * never use hints, so the caller omits the no-hints % for them.
+ */
+export async function getAllTimeGame(
+  pool: Pool,
+  gameName: string,
+  cutoffISO: string | null
+): Promise<AllTimePlayerRow[]> {
+  const res = await pool.query(
+    `SELECT p.player_name AS player,
+            AVG(m.score)::numeric AS avg,
+            COUNT(*)::int AS games,
+            (COUNT(*) FILTER (WHERE m.no_hints))::numeric / COUNT(*)::numeric AS no_hints_pct,
+            (COUNT(*) FILTER (WHERE m.no_mistake))::numeric / COUNT(*)::numeric AS no_mistakes_pct
+       FROM player_game_mapping m
+       JOIN games_by_day gd ON gd.game_id = m.game_id AND gd.game_number = m.game_number
+       JOIN game_defs g     ON g.game_id = gd.game_id
+       JOIN players p       ON p.player_id = m.player_id
+      WHERE p.is_on_public_leaderboard = TRUE
+        AND g.game_name = $1
+        AND ($2::date IS NULL OR gd.date >= $2::date)
+      GROUP BY p.player_name
+      ORDER BY AVG(m.score) ASC`,
+    [gameName, cutoffISO]
+  );
+
+  return assignRanks(
+    res.rows.map((r) => ({
+      playerName: r.player,
+      score: Number(r.avg),
+      gamesCount: Number(r.games),
+      noHintsPct: Number(r.no_hints_pct),
+      noMistakesPct: Number(r.no_mistakes_pct),
     }))
   );
 }
