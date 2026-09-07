@@ -31,9 +31,6 @@ export default async function AllTime({
     <main className="page">
       <h1>All-time leaderboard</h1>
       <RangeNav basePath="/all-time" active={key} />
-      <Link className="back" href="/">
-        ← Today
-      </Link>
 
       <div className="games">
         {games.map((g) => (

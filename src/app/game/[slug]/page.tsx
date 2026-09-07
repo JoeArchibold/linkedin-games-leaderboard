@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import DatePicker from "@/components/DatePicker";
 import DayNav from "@/components/DayNav";
 import { getPool } from "@/lib/db";
 import { formatScore } from "@/lib/format";
@@ -33,14 +33,13 @@ export default async function GamePage({
         {getDisplayName(slug)} — {selected}
       </h1>
       <DayNav current={selected} maxDate={today} basePath={`/game/${slug}`} />
-      <Link className="back" href={`/?date=${selected}`}>
-        ← All games
-      </Link>
+      <DatePicker current={selected} maxDate={today} />
 
       {rows.length === 0 ? (
         <p className="empty">No scores recorded for this day.</p>
       ) : (
-        <table className="board">
+        <div className="table-scroll">
+          <table className="board">
           <thead>
             <tr>
               <th>#</th>
@@ -60,8 +59,9 @@ export default async function GamePage({
                 <td>{r.noMistakes ? "✓" : ""}</td>
               </tr>
             ))}
-          </tbody>
-        </table>
+           </tbody>
+          </table>
+        </div>
       )}
     </main>
   );

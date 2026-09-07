@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ADMIN_COOKIE, isAdminConfigured, isValidSessionToken } from "@/lib/admin";
@@ -25,9 +24,6 @@ export default async function AdminLogin({
         <p className="empty">
           The admin password is not configured (set <code>LEADERBOARD_ADMIN_PASSWORD</code>).
         </p>
-        <Link className="back" href="/">
-          ← Back
-        </Link>
       </main>
     );
   }

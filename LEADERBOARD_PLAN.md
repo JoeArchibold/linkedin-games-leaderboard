@@ -53,10 +53,11 @@ in phases and merged into the `development` branch (which later merges into
   filter wired, `/admin` login + Show/Hide dashboard)
 - [x] Phase C — all-time leaderboard (`/all-time` top 5 per game, `/all-time/[slug]`
   full per-game averages with no-hints/no-mistakes %, windows `all|30d|7d`)
-- [ ] Phase D — polish
+- [x] Phase D — polish (shared `SiteNav` header, `DatePicker` on daily pages,
+  responsive table scroll + mobile padding)
 
 Follow-up (end of the feature):
-- [ ] Fold the `players.is_on_public_leaderboard` column into `init_db.sql` so
+- [x] Fold the `players.is_on_public_leaderboard` column into `init_db.sql` so
   fresh installs get it directly (not only via the migration file).
 
 ## Phase A decisions (recorded)

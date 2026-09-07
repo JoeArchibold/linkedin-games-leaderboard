@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import RangeNav from "@/components/RangeNav";
@@ -41,14 +40,12 @@ export default async function AllTimeGame({
         {getDisplayName(slug)} — all time
       </h1>
       <RangeNav basePath={`/all-time/${slug}`} active={key} />
-      <Link className="back" href={`/all-time?range=${key}`}>
-        ← All games
-      </Link>
 
       {rows.length === 0 ? (
         <p className="empty">No scores in this window.</p>
       ) : (
-        <table className="board">
+        <div className="table-scroll">
+          <table className="board">
           <thead>
             <tr>
               <th>#</th>
@@ -71,7 +68,8 @@ export default async function AllTimeGame({
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
     </main>
   );

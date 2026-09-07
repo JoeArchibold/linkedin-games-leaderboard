@@ -52,7 +52,7 @@ a {
 .page {
   width: min(52rem, 92vw);
   margin: 0 auto;
-  padding: 2rem 0 4rem;
+  padding: 1rem 0 4rem;
 }
 
 .page h1 {
@@ -144,9 +144,65 @@ a {
   white-space: nowrap;
 }
 
-/* Space between the daily<->all-time switch button and the leaderboards grid. */
-.back + .games {
-  margin-top: 1.5rem;
+/* Site header nav (rendered in the root layout, outside .page) */
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(52rem, 92vw);
+  margin: 0 auto;
+  border-bottom: 1px solid var(--foreground);
+  padding: 0.9rem 0 1rem;
+}
+
+.site-nav .brand {
+  font-weight: 700;
+}
+
+.site-nav nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.site-nav a.active {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* Date picker */
+.date-form {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.date-form input {
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--foreground);
+  border-radius: 0.4rem;
+  color: var(--foreground);
+  background: transparent;
+}
+
+.date-form button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--foreground);
+  border-radius: 0.4rem;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Let wide tables scroll horizontally on small screens. */
+.table-scroll {
+  overflow-x: auto;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 1rem 0.5rem 3rem;
+  }
 }
 
 /* Current time-window tab on /all-time. */
