@@ -35,7 +35,8 @@ export default async function AdminDashboard() {
       {players.length === 0 ? (
         <p className="empty">No players with recorded scores yet.</p>
       ) : (
-        <table className="board">
+        <div className="table-scroll">
+          <table className="board">
           <thead>
             <tr>
               <th>Player</th>
@@ -58,7 +59,8 @@ export default async function AdminDashboard() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
     </main>
   );

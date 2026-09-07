@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import RangeNav from "@/components/RangeNav";
+import SiteNav from "@/components/SiteNav";
 import { getPool } from "@/lib/db";
 import { formatAverage } from "@/lib/format";
 import { addDaysISO, linkedInTodayISO } from "@/lib/date";
@@ -29,11 +30,9 @@ export default async function AllTime({
 
   return (
     <main className="page">
+      <SiteNav active="alltime" />
       <h1>All-time leaderboard</h1>
       <RangeNav basePath="/all-time" active={key} />
-      <Link className="back" href="/">
-        ← Today
-      </Link>
 
       <div className="games">
         {games.map((g) => (
