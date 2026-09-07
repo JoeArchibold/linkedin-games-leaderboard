@@ -57,7 +57,7 @@ in phases and merged into the `development` branch (which later merges into
   responsive table scroll + mobile padding)
 
 Follow-up (end of the feature):
-- [ ] Fold the `players.is_on_public_leaderboard` column into `init_db.sql` so
+- [x] Fold the `players.is_on_public_leaderboard` column into `init_db.sql` so
   fresh installs get it directly (not only via the migration file).
 
 ## Phase A decisions (recorded)
