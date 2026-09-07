@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ADMIN_COOKIE, isAdminConfigured, isValidSessionToken } from "@/lib/admin";
@@ -28,9 +27,6 @@ export default async function AdminDashboard() {
         Players shown here have recorded scores. Only those marked visible appear
         on the public leaderboard (hidden by default).
       </p>
-      <Link className="back" href="/">
-        ← View leaderboard
-      </Link>
 
       {players.length === 0 ? (
         <p className="empty">No players with recorded scores yet.</p>

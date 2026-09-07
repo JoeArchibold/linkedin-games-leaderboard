@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 
 import RangeNav from "@/components/RangeNav";
-import SiteNav from "@/components/SiteNav";
 import { getPool } from "@/lib/db";
 import { formatAverage } from "@/lib/format";
 import { addDaysISO, linkedInTodayISO } from "@/lib/date";
@@ -37,7 +36,6 @@ export default async function AllTimeGame({
 
   return (
     <main className="page">
-      <SiteNav active="alltime" />
       <h1>
         {getDisplayName(slug)} — all time
       </h1>

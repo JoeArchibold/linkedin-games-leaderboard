@@ -11,7 +11,11 @@ export default function DatePicker({
 }) {
   return (
     <form method="get" className="date-form">
+      {/* key={current} forces the input to remount on navigation, so the
+          displayed date updates even in browsers (e.g. Firefox) that otherwise
+          preserve a stale defaultValue. */}
       <input
+        key={current}
         type="date"
         name="date"
         defaultValue={current}

@@ -162,8 +162,10 @@ request and are not prerendered at build time.
   omits the no-hints %, since hints can't be used there).
 - Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
 - `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
-- Shared `SiteNav` header (Daily / All-time links); `DatePicker` on daily pages to
-  jump to a day; `RangeNav` on the all-time pages for the time window.
+- A global `SiteNav` header (Daily / All-time links, rendered once in
+  `src/app/layout.tsx` inside a `Suspense` boundary) whose Daily link preserves
+  `?date=`; `DatePicker` on the daily pages to jump to a day; `RangeNav` on the
+  all-time pages for the time window.
 - Only players with `players.is_on_public_leaderboard = TRUE` are shown (hidden by
   default; admins opt them in).
 

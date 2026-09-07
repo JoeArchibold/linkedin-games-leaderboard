@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import DatePicker from "@/components/DatePicker";
 import DayNav from "@/components/DayNav";
-import SiteNav from "@/components/SiteNav";
 import { getPool } from "@/lib/db";
 import { formatScore } from "@/lib/format";
 import { linkedInTodayISO, isValidISODate } from "@/lib/date";
@@ -29,7 +28,6 @@ export default async function Home({
 
   return (
     <main className="page">
-      <SiteNav date={selected} active="daily" />
       <h1>Daily leaderboard</h1>
       <DayNav current={selected} maxDate={today} basePath="/" />
       <DatePicker current={selected} maxDate={today} />
