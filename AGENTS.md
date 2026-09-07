@@ -49,11 +49,11 @@ runtime image only needs `node`.
 - Build + start (from repo root, with a git-ignored `.env` present):
   `docker compose up -d --build`
 - `docker-compose.yml` injects runtime config via `environment:` + `${VAR}`
-  substitution (`DATABASE_URL`, `DB_SSL`, `LEADERBOARD_INGEST_TOKEN`). Locally,
-  Docker Compose auto-loads the git-ignored `.env` for interpolation; in
-  Portainer, the stack's "Environment variables" section provides them. Secrets
-  are never baked into the image — `.dockerignore` excludes `.env*` from the
-  build context.
+  substitution (`DATABASE_URL`, `DB_SSL`, `LEADERBOARD_INGEST_TOKEN`,
+  `LEADERBOARD_ADMIN_PASSWORD`). Locally, Docker Compose auto-loads the
+  git-ignored `.env` for interpolation; in Portainer, the stack's "Environment
+  variables" section provides them. Secrets are never baked into the image —
+  `.dockerignore` excludes `.env*` from the build context.
 - The host port binding is `LEADERBOARD_PORT_BIND` (default `"127.0.0.1:3000:3000"`
   — localhost only, so a Cloudflare tunnel on the host reaches it there). Override
   via a local `.env` or Portainer's "Environment variables", e.g. `"3000:3000"`
