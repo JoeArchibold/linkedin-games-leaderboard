@@ -23,3 +23,15 @@ export function isKnownGame(gameName: string): boolean {
 export function getScoreUnits(gameName: string): string | null {
   return GAME_CATALOG[gameName]?.scoreUnits ?? null;
 }
+
+/**
+ * Human-readable game name: `crossclimb` -> "Crossclimb", `mini_sudoku` ->
+ * "Mini Sudoku" (underscores to spaces, each word title-cased).
+ */
+export function getDisplayName(gameName: string): string {
+  return gameName
+    .replace(/_/g, " ")
+    .split(" ")
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : word))
+    .join(" ");
+}

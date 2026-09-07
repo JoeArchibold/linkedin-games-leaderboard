@@ -132,13 +132,62 @@ server-side only and is never sent to the browser.
   games → `NormalizeResult { day, ignoredUnknownGames }`.
 - `ingest.ts` — `ingestDay(pool, day)`: one transaction; upserts `game_defs`,
   `players`, `games_by_day`, `player_game_mapping`.
+- `date.ts` — `linkedInTodayISO()`, `addDaysISO()`, `isValidISODate()`: day helpers
+  using LinkedIn's (America/Los_Angeles) time zone.
+- `format.ts` — `formatScore(gameName, score)`: integer → `m:ss` (seconds games)
+  or plain number (count games); `null` → `"-"`.
+- `leaderboard.ts` — public-facing queries: `getDaySummary(pool, dateISO, topN)`
+  (top N per game), `getGameDay(pool, gameName, dateISO)` (full day board),
+  `getAllTime(pool, cutoffISO, topN)` (top N per game by average, optional window)
+  and `getAllTimeGame(pool, gameName, cutoffISO)` (per-game all-time averages with
+  no-hints/no-mistakes percentages). Filters to
+  `players.is_on_public_leaderboard = TRUE`. Also exports `assignRanks`.
+- `admin.ts` — admin session auth (`LEADERBOARD_ADMIN_PASSWORD`): verify password,
+  HMAC-signed httpOnly cookie (`leaderboard_admin`), `isValidSessionToken`.
+- `visibility.ts` — `listPlayerVisibility(pool)`, `setPlayerVisibility(pool, id, v)`
+  for the admin dashboard.
+
+## Public pages
+
+Server-rendered, `export const dynamic = "force-dynamic"` so they read the DB per
+request and are not prerendered at build time.
+
+- `/` — daily summary (top 5 per game, catalog order) for a selected day.
+- `/game/[slug]` — full day leaderboard for one game.
+- `/all-time` — top 5 players per game by average over a time window
+  (`?range=all|30d|7d`, default all-time). The average skips days a player didn't
+  play; there is **no minimum-games threshold** (a single great score can top the
+  list); **all** recorded days count (including provisional today); ties share a
+  rank. Game names link to the full per-game page.
+- `/all-time/[slug]` — per-game all-time averages for every visible player, with
+  the share of games with no hints / no mistakes shown as percentages (pinpoint
+  omits the no-hints %, since hints can't be used there).
+- Day switching via `?date=YYYY-MM-DD` (defaults to today, LinkedIn/Pacific).
+- `src/components/DayNav.tsx` renders Prev/Next links; "Next" is disabled on today.
+- A global `SiteNav` header (Daily / All-time links, rendered once in
+  `src/app/layout.tsx` inside a `Suspense` boundary) whose Daily link preserves
+  `?date=`; `DatePicker` on the daily pages to jump to a day; `RangeNav` on the
+  all-time pages for the time window.
+- Only players with `players.is_on_public_leaderboard = TRUE` are shown (hidden by
+  default; admins opt them in).
+
+## Admin dashboard
+
+- `/admin/login` — shared-password login (server action in `src/app/admin/actions.ts`),
+  gated by the `LEADERBOARD_ADMIN_PASSWORD` env var. On success it sets an httpOnly,
+  HMAC-signed cookie (`leaderboard_admin`, 7-day TTL); no session table.
+- `/admin` — lists recorded players with their visibility and a Show/Hide toggle
+  (server action `setVisibility`), then `revalidatePath` so public pages refresh.
+- Both routes are `force-dynamic` and refuse access when the cookie is invalid or
+  the password env var is unset.
 
 ## Database (`init_db.sql`)
 
 Tables (each upsertable by its natural key):
 
 - `game_defs` — `game_id` (identity), `game_name` **UNIQUE**, `score_units`.
-- `players` — `player_id` (identity), `player_name` **UNIQUE**, `external_id`.
+- `players` — `player_id` (identity), `player_name` **UNIQUE**, `external_id`
+  (+ `is_on_public_leaderboard` BOOLEAN, added by a migration; see below).
 - `games_by_day` — PK `(game_id, game_number)`, `date`, `avg_score` (nullable),
   `finalized`, `avg_last_updated` (defaults `now()`).
 - `player_game_mapping` — PK `(player_id, game_id, game_number)`, `score`,
@@ -146,6 +195,15 @@ Tables (each upsertable by its natural key):
 
 View `games_by_day_with_updates` adds `leaderboard_last_updated` =
 `max(updated_ts)` over the matching `player_game_mapping` rows.
+
+Schema changes beyond `init_db.sql` are applied via migrations: numbered SQL files
+in `db/migrations/` (e.g. `001_add_player_public_visibility.sql`), applied and
+tracked by `db/migrate.mjs` in a `schema_migrations` table. Run with `pnpm migrate`
+(or `node db/migrate.mjs` from the repo root); the runner reads `DATABASE_URL` +
+`DB_SSL` from the repo-root `.env` if they aren't in the environment. Note that
+`ALTER TABLE` (and hence the runner) must run as a role that owns the tables —
+ownership was transferred to `leaderboard_app` so `pnpm migrate` works under the
+app user; if you set the tables up as `postgres`, re-own them before migrating.
 
 ## Score semantics
 

@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS game_defs (
 
 -- players
 CREATE TABLE IF NOT EXISTS players (
-    player_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    player_name TEXT   NOT NULL UNIQUE,
-    external_id TEXT
+    player_id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_name              TEXT   NOT NULL UNIQUE,
+    external_id              TEXT,
+    is_on_public_leaderboard BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- games by day
